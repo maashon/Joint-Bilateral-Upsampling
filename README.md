@@ -120,3 +120,5 @@ Additional notes:
 
 2- the datasets used in this project are Middlebury 2005 adn 2006 (18 images in total)
 
+3-the output of the program can be found in src/data/ directory
+
