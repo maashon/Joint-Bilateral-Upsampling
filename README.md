@@ -114,6 +114,23 @@ as it can be observed, our Implementations are significantly more cpu-intense th
 
 the fastest methode was observed to be the nearest neigbor interpolation.
 
+similarity evaluation:
+
+The results of the algorithms undergone a similarity measurement and the result is as follows:
+
+Structured similarity Index Measure(SSIM):
+
+![ssim](https://user-images.githubusercontent.com/72257286/144660283-7b0e497a-19b4-4861-a3ad-c3f483741020.png)
+
+as the result demonstrates, the JBU8 has a noticable worse performance than others.JBU4 was close enough to the other interpolation methodes.
+
+PSNR :
+
+![psnr](https://user-images.githubusercontent.com/72257286/144660528-40e12b3b-0c02-4527-a24a-c1ea67020b98.png)
+
+the same observations was observed while comparing the PSNR values and the JBU8 does not perform well on the downsampled image.
+our JBU4 methode is again so close to opencv implementations.
+
 Additional notes:
 
 1- the project is put in a for loop which cmputes the individual images in eacgh forlder fully automatically
