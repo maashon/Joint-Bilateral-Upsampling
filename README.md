@@ -18,14 +18,13 @@ Downsampled images:
 
 with factor 4:
 
-
-![downsampled4](https://user-images.githubusercontent.com/72257286/144595466-4e5ae779-5593-4f05-9561-517097f39ce9.png)
-
+![downsampled4](https://user-images.githubusercontent.com/72257286/144610737-77861e0c-0022-4ea9-bbac-a91eb0d4e9f2.png)
 
 
 with factor 8 :
 
-![downsampled8](https://user-images.githubusercontent.com/72257286/144595489-c05ceeaa-01b0-4aca-b39e-3d7728afbdbc.png)
+![downsampled8](https://user-images.githubusercontent.com/72257286/144610779-e197da67-40d2-47d2-9962-944d3d87ae23.png)
+
 
 
 there are two folders in each directory called Bilateral and upsample.In bilateral folder, 16 different outputs of the bilateral filter with different sigma parameters are located.For each output, the image name contains the sigma values,both spatial and spectral sigma,the similarity measures : SSIM,PSNR,SSD and RMSE .In upsample folder, the upsampled images are located.In each image directory, a text file is also created with the program containing the runtime of various different algorithms like linear interpolatoin, bicubic interpolation, nearest neighbor and area relation based upsampling and their runtime,as well as the similarity measures measured during the runtime.
@@ -73,34 +72,31 @@ and here are the outputs of each algorithm :
 
 Factor 4 with JBU:
 
-![upsampled Disparity with factor 4](https://user-images.githubusercontent.com/72257286/144597234-822b5760-e678-4bdb-9d94-c6a1e0320dad.png)
+![upsampled Disparity with factor 4](https://user-images.githubusercontent.com/72257286/144610901-118e9cbb-803b-44a1-bcb2-40a96f4c4455.png)
 
 
 factor 8 with area relatoin:
 
-
-![upsampled Disparity with factor 8 arae relatoin interpolation ](https://user-images.githubusercontent.com/72257286/144597283-a9a1bb26-787d-4a9f-8213-00ee60267ab6.png)
-
+![upsampled Disparity with factor 8 arae relatoin interpolation ](https://user-images.githubusercontent.com/72257286/144610915-03eeb293-311a-4898-9f5b-cd719d3e5d80.png)
 
 Factor 8 with bicubic interpolation:
 
-
-![upsampled Disparity with factor 8 bicubic interpolation ](https://user-images.githubusercontent.com/72257286/144597318-e991e1a7-69e4-4802-b7db-c96634a56412.png)
+![upsampled Disparity with factor 8 bicubic interpolation ](https://user-images.githubusercontent.com/72257286/144610921-0c5137c8-1223-4ce4-b467-a7203b2bc8e8.png)
 
 
 Factor 8 with linear interpolation:
 
-![upsampled Disparity with factor 8 linear interpolation ](https://user-images.githubusercontent.com/72257286/144597381-c16ad728-bc0e-4f53-b590-764c4979fd94.png)
+![upsampled Disparity with factor 8 linear interpolation ](https://user-images.githubusercontent.com/72257286/144610929-fe98a541-b69f-47c3-a2a2-9e89f5af8d87.png)
 
 Factor 8 with nearest neighbor interpolation:
 
-![upsampled Disparity with factor 8 nearest neighbor interpolation ](https://user-images.githubusercontent.com/72257286/144598354-b4bfc9e4-8c9e-44fe-81f6-501882edcc56.png)
+![upsampled Disparity with factor 8 nearest neighbor interpolation ](https://user-images.githubusercontent.com/72257286/144610950-4bdaf16f-d708-4ffb-a5d4-50da0709e6e3.png)
 
 
 factor 8 JBU upsampling:
 
+![upsampled Disparity with factor 8](https://user-images.githubusercontent.com/72257286/144610960-2cc3e821-83b7-4dbb-b171-df296e250bcb.png)
 
-![upsampled Disparity with factor 8](https://user-images.githubusercontent.com/72257286/144598390-36be385f-97aa-4779-ab7b-4a2123a39578.png)
 
 as it can be opbserverd from the results, the JBU methode does not perform good i the case of images downsampled with high factor which migh be the result of applying the bluring iteratively in each iteration.
 
