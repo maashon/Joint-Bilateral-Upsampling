@@ -296,13 +296,13 @@ int main(int argc, char** argv) {
 	cv::String names[] = {"Aloe","Art","Baby1","Books","Bowling1","Dolls","Flowerpots","Lampshade1","Lampshade2","Laundry",
 	"Midd1","Midd2","Moebius","Monopoly","Plastic","Reindeer","Rocks1","Wood1"};
 	for (int index = 0; index < 18; index++) {
-		//std::cout << "Doing the " << names[index] << " image set" << std::endl;
+		std::cout << "Doing the " << names[index] << " image set" << std::endl;
 		const int windowSize = 5;
 		std::string directory = "D:/Users/Parsa/Desktop/Study materials/3D Sensing/practice/hw2/03_bilateral_task_solution/src/data/";
 		std::string ImageName = names[index]+"/";//"Lampshade1/";
 		cv::Mat input_rgb = cv::imread(directory + ImageName + "view1.png", 0);
 		cv::Mat input_disp = cv::imread(directory + ImageName + "disp1.png", 0);
-		std::cout << "ssim for sample" << SSIM(input_rgb, input_rgb) << std::endl;
+	
 		//creating the downsampled images
 		cv::Mat down4, down8;
 		cv::resize(input_disp, down4, input_disp.size() / 4, 1, 1, cv::INTER_LINEAR);

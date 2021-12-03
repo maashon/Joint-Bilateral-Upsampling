@@ -1,6 +1,6 @@
-upsampling the depth map with 4-factor with JBU methode took 0.187594 second
-upsampling the depth map with 8-factor with JBU methode took 0.266249 second
-upsampling the depth map with 8-factor with linear interpolation methode took 0.005949 second with  SSD = 8084318.000000 RMSE = 6.914531 PSNR = 31.335549 SSIM = 0.141726 
-upsampling the depth map with 8-factor with nearest neighbor interpolation methode took 0.000820 second with  SSD = 12181875.000000 RMSE = 8.487858 PSNR = 29.554841 SSIM = 0.141132 
-upsampling the depth map with 8-factor with area relation interpolation methode took 0.003657 second with  SSD = 9488819.000000 RMSE = 7.491126 PSNR = 30.639861 SSIM = 0.141305 
-upsampling the depth map with 8-factor with bicubic interpolation methode took 0.000470 second with  SSD = 8525618.000000 RMSE = 7.100746 PSNR = 31.104724 SSIM = 0.143339 
+upsampling the depth map with 4-factor with JBU methode took 0.128937 second
+upsampling the depth map with 8-factor with JBU methode took 0.145846 second
+upsampling the depth map with 8-factor with linear interpolation methode took 0.003158 second with  SSD = 8084318.000000 RMSE = 6.914531 PSNR = 31.335549 SSIM = 0.141726 
+upsampling the depth map with 8-factor with nearest neighbor interpolation methode took 0.000438 second with  SSD = 12181875.000000 RMSE = 8.487858 PSNR = 29.554841 SSIM = 0.141132 
+upsampling the depth map with 8-factor with area relation interpolation methode took 0.003455 second with  SSD = 9488819.000000 RMSE = 7.491126 PSNR = 30.639861 SSIM = 0.141305 
+upsampling the depth map with 8-factor with bicubic interpolation methode took 0.000423 second with  SSD = 8525618.000000 RMSE = 7.100746 PSNR = 31.104724 SSIM = 0.143339 
