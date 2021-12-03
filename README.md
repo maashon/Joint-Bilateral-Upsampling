@@ -1,4 +1,6 @@
 # Joint-Bilateral-Upsampling
+ # Parsa Pourzargham 
+ # Neptune ID: LUM2CE
 
 In this projetc, bilateral joint guided filter is utilized to perform upsampling on downsampled depth images.
 
@@ -99,4 +101,22 @@ factor 8 JBU upsampling:
 
 
 as it can be opbserverd from the results, the JBU methode does not perform good i the case of images downsampled with high factor which migh be the result of applying the bluring iteratively in each iteration.
+
+
+figures:
+
+Here is a figure of the runtime of different algorithms(aloe example was used):
+
+
+![Runtime](https://user-images.githubusercontent.com/72257286/144614568-f8481cf0-5bf5-4320-bd25-b0d2817c1fa4.png)
+
+as it can be observed, our Implementations are significantly more cpu-intense thatn the opencv implemntations, which are noticably faster and more efficient.
+
+the fastest methode was observed to be the nearest neigbor interpolation.
+
+Additional notes:
+
+1- the project is put in a for loop which cmputes the individual images in eacgh forlder fully automatically
+
+2- the datasets used in this project are Middlebury 2005 adn 2006 (18 images in total)
 
