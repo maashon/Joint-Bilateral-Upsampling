@@ -139,3 +139,5 @@ Additional notes:
 
 3-the output of the program can be found in src/data/ directory
 
+4- as the similarity measures implemented in the project resulted in an unmeaningful result(0.1 for ssim), the similarity measures were calculated with a python script called similarity.py included in the src folder
+
