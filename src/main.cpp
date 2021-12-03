@@ -47,6 +47,7 @@ cv::Mat CreateGaussianKernel(int window_size, const double sigma) {
 
 
 
+
 cv::Mat Bilateral(const cv::Mat& input, const int window_size = 5, float sigmaSpatial = 1, float sigmaSpectral = 5) {
 	const auto width = input.cols;
 	const auto height = input.rows;
@@ -148,17 +149,17 @@ void JointBilateral(const cv::Mat& input, const cv::Mat& guide, cv::Mat& output,
 cv::Mat Upsample(const cv::Mat& input, const cv::Mat& guide, const int window_size = 5, const float sigmaSpectral = 20.0, const double sigmaSpatial = 0.23) {
 	int inputHeight = input.rows;
 	int guideHeight = guide.rows;
-	int upsamplingFactor = log2(inputHeight / guideHeight);
-	cv::Mat D = guide.clone(); 
-	cv::Mat I = input.clone();
+	int upsamplingFactor = log2(guideHeight / inputHeight);
+	cv::Mat D = input.clone();
+	cv::Mat I = guide.clone();
 	for (int i = 1; i <= upsamplingFactor -1; ++i)
 	{
 		cv::resize(D, D, D.size() * 2); 
-		cv::resize(input, I, D.size());	
-		JointBilateral(I, D, D, window_size,sigmaSpectral, sigmaSpatial); 
+		cv::resize(I, I, D.size());	
+		JointBilateral(D, I, I, window_size,sigmaSpectral, sigmaSpatial); 
 	}
-	cv::resize(D, D, input.size());
-	JointBilateral(input, D, D, window_size, sigmaSpectral, sigmaSpatial); 
+	cv::resize(D, D, guide.size());
+	JointBilateral(input, I, I, window_size, sigmaSpectral, sigmaSpatial); 
 	return D;
 }
 
@@ -292,153 +293,160 @@ long double SSIM(const cv::Mat& img1, const cv::Mat& img2)
 
 int main(int argc, char** argv) {
 
-	
+	cv::String names[] = {"Aloe","Art","Baby1","Books","Bowling1","Dolls","Flowerpots","Lampshade1","Lampshade2","Laundry",
+	"Midd1","Midd2","Moebius","Monopoly","Plastic","Reindeer","Rocks1","Wood1"};
+	for (int index = 0; index < 18; index++) {
+		//std::cout << "Doing the " << names[index] << " image set" << std::endl;
+		const int windowSize = 5;
+		std::string directory = "D:/Users/Parsa/Desktop/Study materials/3D Sensing/practice/hw2/03_bilateral_task_solution/src/data/";
+		std::string ImageName = names[index]+"/";//"Lampshade1/";
+		cv::Mat input_rgb = cv::imread(directory + ImageName + "view1.png", 0);
+		cv::Mat input_disp = cv::imread(directory + ImageName + "disp1.png", 0);
+		std::cout << "ssim for sample" << SSIM(input_rgb, input_rgb) << std::endl;
+		//creating the downsampled images
+		cv::Mat down4, down8;
+		cv::resize(input_disp, down4, input_disp.size() / 4, 1, 1, cv::INTER_LINEAR);
+		cv::resize(input_disp, down8, input_disp.size() / 8, 1, 1, cv::INTER_LINEAR);
+		cv::imwrite(directory + ImageName + "downsampled4.png", down4);
+		cv::imwrite(directory + ImageName + "downsampled8.png", down8);
 
-	const int windowSize = 7;
-	std::string directory = "D:/Users/Parsa/Desktop/Study materials/3D Sensing/practice/hw2/03_bilateral_task_solution/src/data/"; 
-	std::string ImageName = "Wood1/";
-	cv::Mat input_rgb = cv::imread(directory + ImageName+ "view1.png", 0);
-	//creating the downsampled images
-	cv::Mat down4, down8;
-	cv::resize(input_rgb, down4, input_rgb.size() / 4, 1, 1, cv::INTER_LINEAR);
-	cv::resize(input_rgb, down8, input_rgb.size() / 8, 1, 1, cv::INTER_LINEAR);
-	cv::imwrite(directory + ImageName + "downsampled4.png", down4);
-	cv::imwrite(directory + ImageName + "downsampled8.png", down8);
-
-	cv::Mat input_depth_4 = cv::imread(directory + ImageName+ "downsampled4.png", 0);
-	cv::Mat input_depth_8 = cv::imread(directory + ImageName + "downsampled8.png", 0);
-	std::ofstream file;
-	file.open(directory +ImageName+ "runtime log.txt");
-	std::string line;
-
-	
-
-
-	//cv::Mat im = cv::imread(directory + ImageName + "view1.png", 0);
-
-	if (input_rgb.data == nullptr) {
-		std::cerr << "Failed to load image" << std::endl;
-	}
-	cv::Mat input = input_rgb.clone();
-	cv::Mat noise(input_rgb.size(), input_rgb.type());
-	uchar mean = 0;
-	uchar stddev = 25;
-	cv::randn(noise, mean, stddev);
-	input_rgb += noise;
-	
-	//applying the iterative upsampling
-
-	auto t_begin = std::chrono::high_resolution_clock::now();
-	cv::Mat upSampled4 = Upsample(input_rgb, input_depth_4, windowSize,1000.0,0.13);
-	auto t_end = std::chrono::high_resolution_clock::now();
-	auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
-	line = "upsampling the depth map with 4-factor with JBU methode took " + std::to_string(duration) +" second\n";
-	file << line;
-	imwrite(directory +ImageName +"/upsample/"+ "upsampled Disparity with factor 4.png", upSampled4);
-
-
-	t_begin = std::chrono::high_resolution_clock::now();
-	cv::Mat upSampled8 = Upsample(input_rgb, input_depth_8, windowSize, 1.0, 0.009);
-	t_end = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
-	line = "upsampling the depth map with 8-factor with JBU methode took " + std::to_string(duration) + " second\n";
-	file << line;
-	imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8.png", upSampled8);
-	
-	//upsampling using other methosdes for upsampling
-	cv::Mat inter_linear, inter_nearest, inter_area, inter_cubic;
-
-	//upsampling using linear interpolatoin
-	t_begin = std::chrono::high_resolution_clock::now();
-	cv::resize(input_depth_4, inter_linear, input_rgb.size(), 8, 8, cv::INTER_LINEAR);
-	t_end = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
-
-	double ssd = SSD(input_rgb, inter_linear);
-	double rmse = RMSE(input_rgb, inter_linear);
-	double psnr = PSNR(input_rgb, inter_linear);
-	long double ssim = SSIM(input_rgb, inter_linear);
-
-	line = "upsampling the depth map with 8-factor with linear interpolation methode took " + std::to_string(duration) + " second with "
-		+  " SSD = "+ std::to_string(ssd)+ " RMSE = " + std::to_string(rmse) + " PSNR = " + std::to_string(psnr)
-		+ " SSIM = " + std::to_string(ssim) +" \n";
-	file << line;
-	imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8 linear interpolation .png", inter_linear);
-	
-	
-	//upsampling using  nearest neighbor interpolation
-	t_begin = std::chrono::high_resolution_clock::now();
-	cv::resize(input_depth_4, inter_nearest, input_rgb.size(), 8, 8, cv::INTER_NEAREST);
-	t_end = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
-
-	ssd = SSD(input_rgb, inter_nearest);
-	rmse = RMSE(input_rgb, inter_nearest);
-	psnr = PSNR(input_rgb, inter_nearest);
-	ssim = SSIM(input_rgb, inter_nearest);
-
-	line = "upsampling the depth map with 8-factor with nearest neighbor interpolation methode took " + std::to_string(duration) + " second with "
-		+ " SSD = " + std::to_string(ssd) + " RMSE = " + std::to_string(rmse) + " PSNR = " + std::to_string(psnr)
-		+ " SSIM = " + std::to_string(ssim) + " \n";
-	file << line;
-	imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8 nearest neighbor interpolation .png", inter_linear);
-
-	
-	//upsampling using  interpolatoni using area relatoin
-	
-	t_begin = std::chrono::high_resolution_clock::now();
-	cv::resize(input_depth_4, inter_area, input_rgb.size(), 8, 8, cv::INTER_AREA);
-	t_end = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
-
-	ssd = SSD(input_rgb, inter_area);
-	rmse = RMSE(input_rgb, inter_area);
-	psnr = PSNR(input_rgb, inter_area);
-	ssim = SSIM(input_rgb, inter_area);
-
-	line = "upsampling the depth map with 8-factor with area relation interpolation methode took " + std::to_string(duration) + " second with "
-		+ " SSD = " + std::to_string(ssd) + " RMSE = " + std::to_string(rmse) + " PSNR = " + std::to_string(psnr)
-		+ " SSIM = " + std::to_string(ssim) + " \n";
-	file << line;
-	imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8 arae relatoin interpolation .png", inter_linear);
-
-	
-	//upsampling using  bicubic interpolatoin
-
-	t_begin = std::chrono::high_resolution_clock::now();
-	cv::resize(input_depth_4, inter_cubic, input_rgb.size(), 8, 8, cv::INTER_CUBIC);
-	t_end = std::chrono::high_resolution_clock::now();
-	duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
-
-	ssd = SSD(input_rgb, inter_cubic);
-	rmse = RMSE(input_rgb, inter_cubic);
-	psnr = PSNR(input_rgb, inter_cubic);
-	ssim = SSIM(input_rgb, inter_cubic);
-
-	line = "upsampling the depth map with 8-factor with bicubic interpolation methode took " + std::to_string(duration) + " second with "
-		+ " SSD = " + std::to_string(ssd) + " RMSE = " + std::to_string(rmse) + " PSNR = " + std::to_string(psnr)
-		+ " SSIM = " + std::to_string(ssim) + " \n";
-	file << line;
-	imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8 bicubic interpolation .png", inter_linear);
+		cv::Mat input_depth_4 = cv::imread(directory + ImageName + "downsampled4.png", 0);
+		cv::Mat input_depth_8 = cv::imread(directory + ImageName + "downsampled8.png", 0);
+		std::ofstream file;
+		file.open(directory + ImageName + "runtime log.txt");
+		std::string line;
 
 
 
-	file.close();
-	std::vector<float> sigmaSpatial = { 0.8, 1.2, 2.0, 3.2 }; 
-	std::vector<float> sigmaSpectral = { 100., 10000., 500000., 1000000.0 };
-	for (int i = 0; i < 4; i++) {	
-		for (int j = 0; j < 4; j++) {
-			cv::Mat output = Bilateral(input_rgb, windowSize, sigmaSpectral[i], sigmaSpatial[j]);
-			double ssd = SSD(input, output);
-			double rmse = RMSE(input, output);
-			double psnr = PSNR(input, output);
-			long double ssim = SSIM(input, output);
-			std::string outputName= directory + ImageName +"/bilateral/"+" spectral sigma  "+ std::to_string(sigmaSpectral[i])  +"spatial sigma " + std::to_string(sigmaSpatial[j])
-				+" SSIM "+ std::to_string(ssim) + " PSNR " + std::to_string(psnr) +
-				" RMSE " + std::to_string(rmse) + " SSD " + std::to_string(ssd) + ".png";
-			cv::imwrite(outputName,output);
+
+		//cv::Mat im = cv::imread(directory + ImageName + "view1.png", 0);
+
+		if (input_rgb.data == nullptr) {
+			std::cerr << "Failed to load image" << std::endl;
 		}
+		cv::Mat input = input_rgb.clone();
+		cv::Mat noise(input_rgb.size(), input_rgb.type());
+		uchar mean = 0;
+		uchar stddev = 25;
+		cv::randn(noise, mean, stddev);
+		input_rgb += noise;
+
+		//applying the iterative upsampling
+
+		auto t_begin = std::chrono::high_resolution_clock::now();
+		cv::Mat upSampled4 = Upsample(input_depth_4, input_rgb, windowSize, 1.0, 0.23);
+		auto t_end = std::chrono::high_resolution_clock::now();
+		auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
+		line = "upsampling the depth map with 4-factor with JBU methode took " + std::to_string(duration) + " second\n";
+		file << line;
+		imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 4.png", upSampled4);
+
+
+		t_begin = std::chrono::high_resolution_clock::now();
+		cv::Mat upSampled8 = Upsample(input_depth_8, input_rgb, windowSize, 10.0, 0.02);
+		t_end = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
+		line = "upsampling the depth map with 8-factor with JBU methode took " + std::to_string(duration) + " second\n";
+		file << line;
+		imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8.png", upSampled8);
+
+		//upsampling using other methosdes for upsampling
+		cv::Mat inter_linear, inter_nearest, inter_area, inter_cubic;
+
+		//upsampling using linear interpolatoin
+		t_begin = std::chrono::high_resolution_clock::now();
+		cv::resize(input_depth_4, inter_linear, input_rgb.size(), 8, 8, cv::INTER_LINEAR);
+		t_end = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
+
+		double ssd = SSD(input_disp, inter_linear);
+		double rmse = RMSE(input_disp, inter_linear);
+		double psnr = PSNR(input_disp, inter_linear);
+		long double ssim = SSIM(input_disp, inter_linear);
+
+		line = "upsampling the depth map with 8-factor with linear interpolation methode took " + std::to_string(duration) + " second with "
+			+ " SSD = " + std::to_string(ssd) + " RMSE = " + std::to_string(rmse) + " PSNR = " + std::to_string(psnr)
+			+ " SSIM = " + std::to_string(ssim) + " \n";
+		file << line;
+		imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8 linear interpolation .png", inter_linear);
+
+
+		//upsampling using  nearest neighbor interpolation
+		t_begin = std::chrono::high_resolution_clock::now();
+		cv::resize(input_depth_4, inter_nearest, input_rgb.size(), 8, 8, cv::INTER_NEAREST);
+		t_end = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
+
+		ssd = SSD(input_disp, inter_nearest);
+		rmse = RMSE(input_disp, inter_nearest);
+		psnr = PSNR(input_disp, inter_nearest);
+		ssim = SSIM(input_disp, inter_nearest);
+
+		line = "upsampling the depth map with 8-factor with nearest neighbor interpolation methode took " + std::to_string(duration) + " second with "
+			+ " SSD = " + std::to_string(ssd) + " RMSE = " + std::to_string(rmse) + " PSNR = " + std::to_string(psnr)
+			+ " SSIM = " + std::to_string(ssim) + " \n";
+		file << line;
+		imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8 nearest neighbor interpolation .png", inter_linear);
+
+
+		//upsampling using  interpolatoni using area relatoin
+
+		t_begin = std::chrono::high_resolution_clock::now();
+		cv::resize(input_depth_4, inter_area, input_rgb.size(), 8, 8, cv::INTER_AREA);
+		t_end = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
+
+		ssd = SSD(input_disp, inter_area);
+		rmse = RMSE(input_disp, inter_area);
+		psnr = PSNR(input_disp, inter_area);
+		ssim = SSIM(input_disp, inter_area);
+
+		line = "upsampling the depth map with 8-factor with area relation interpolation methode took " + std::to_string(duration) + " second with "
+			+ " SSD = " + std::to_string(ssd) + " RMSE = " + std::to_string(rmse) + " PSNR = " + std::to_string(psnr)
+			+ " SSIM = " + std::to_string(ssim) + " \n";
+		file << line;
+		imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8 arae relatoin interpolation .png", inter_linear);
+
+
+		//upsampling using  bicubic interpolatoin
+
+		t_begin = std::chrono::high_resolution_clock::now();
+		cv::resize(input_depth_4, inter_cubic, input_rgb.size(), 8, 8, cv::INTER_CUBIC);
+		t_end = std::chrono::high_resolution_clock::now();
+		duration = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_begin).count();
+
+		ssd = SSD(input_disp, inter_cubic);
+		rmse = RMSE(input_disp, inter_cubic);
+		psnr = PSNR(input_disp, inter_cubic);
+		ssim = SSIM(input_disp, inter_cubic);
+
+		line = "upsampling the depth map with 8-factor with bicubic interpolation methode took " + std::to_string(duration) + " second with "
+			+ " SSD = " + std::to_string(ssd) + " RMSE = " + std::to_string(rmse) + " PSNR = " + std::to_string(psnr)
+			+ " SSIM = " + std::to_string(ssim) + " \n";
+		file << line;
+		imwrite(directory + ImageName + "/upsample/" + "upsampled Disparity with factor 8 bicubic interpolation .png", inter_linear);
+
+
+
+		file.close();
+		std::vector<float> sigmaSpatial = { 0.8, 1.2, 2.0, 3.2 };
+		std::vector<float> sigmaSpectral = { 100., 10000., 500000., 1000000.0 };
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				cv::Mat output = Bilateral(input_rgb, windowSize, sigmaSpectral[i], sigmaSpatial[j]);
+				double ssd = SSD(input_rgb, output);
+				double rmse = RMSE(input_rgb, output);
+				double psnr = PSNR(input_rgb, output);
+				long double ssim = SSIM(input_rgb, output);
+				std::string outputName = directory + ImageName + "/bilateral/" + " spectral sigma  " + std::to_string(sigmaSpectral[i]) + "spatial sigma " + std::to_string(sigmaSpatial[j])
+					+ " SSIM " + std::to_string(ssim) + " PSNR " + std::to_string(psnr) +
+					" RMSE " + std::to_string(rmse) + " SSD " + std::to_string(ssd) + ".png";
+				cv::imwrite(outputName, output);
+			}
+		}
+
 	}
+	
 	
 	return 0;
 }
